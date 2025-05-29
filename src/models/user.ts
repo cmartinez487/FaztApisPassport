@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt';
 export interface IUser extends Document {
     email: string;
     passport: string;
+    comparePassword(plainPassport: string, hashedPassport: string): Promise<boolean>;
 }
 
 const userSchema = new Schema({
@@ -21,7 +22,7 @@ const userSchema = new Schema({
     }
 })
 
-// Method to encrypt the password
+// Method to encrypt the passport
 userSchema.pre<IUser>('save', async function(next) {
     const user = this;
 
@@ -35,8 +36,12 @@ userSchema.pre<IUser>('save', async function(next) {
 });
 
 // Method to compare the password
-userSchema.methods.comparePassword = async function(passport:string): Promise<boolean> {
-    return await bcrypt.compare(passport, this.passport)
+userSchema.methods.comparePassword = async function(plainPassport: string, hashedPassport: string): Promise<boolean> {
+    if (!plainPassport || !hashedPassport) {
+        throw new Error("passport and hash must be provided.");
+    }
+
+    return await bcrypt.compare(String(plainPassport), String(hashedPassport));
 }
 
 export default model<IUser>('User', userSchema);

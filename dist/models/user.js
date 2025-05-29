@@ -27,7 +27,7 @@ const userSchema = new mongoose_1.Schema({
         required: true
     }
 });
-// Method to encrypt the password
+// Method to encrypt the passport
 userSchema.pre('save', function (next) {
     return __awaiter(this, void 0, void 0, function* () {
         const user = this;
@@ -40,9 +40,12 @@ userSchema.pre('save', function (next) {
     });
 });
 // Method to compare the password
-userSchema.methods.comparePassword = function (passport) {
+userSchema.methods.comparePassword = function (plainPassport, hashedPassport) {
     return __awaiter(this, void 0, void 0, function* () {
-        return yield bcrypt_1.default.compare(passport, this.passport);
+        if (!plainPassport || !hashedPassport) {
+            throw new Error("passport and hash must be provided.");
+        }
+        return yield bcrypt_1.default.compare(String(plainPassport), String(hashedPassport));
     });
 };
 exports.default = (0, mongoose_1.model)('User', userSchema);

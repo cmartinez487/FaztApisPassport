@@ -14,6 +14,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.signIn = exports.signUp = void 0;
 const user_1 = __importDefault(require("../models/user"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const config_1 = __importDefault(require("../config/config"));
+function createToken(user) {
+    const token = jsonwebtoken_1.default.sign({
+        id: user._id,
+        email: user.email
+    }, config_1.default.jwtSecret);
+    return token;
+}
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.body.email || !req.body.passport) {
         res.status(400).json({ msg: 'Please, send your email and pass' });
@@ -23,10 +32,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(400).json({ msg: 'User already exists' });
     }
     else {
-        const newUser = new user_1.default({
-            email: req.body.email,
-            passport: req.body.passport
-        });
+        const newUser = new user_1.default(req.body);
         const savedUser = yield newUser.save();
         res.status(201).json(savedUser);
     }
@@ -34,6 +40,23 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.signUp = signUp;
 const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.send('signin');
+    if (!req.body.email || !req.body.passport) {
+        console.log(req.body);
+        res.status(400).json({ msg: 'Please, send your email and pass' });
+    }
+    const user = yield user_1.default.findOne({ email: req.body.email });
+    if (!user) {
+        res.status(400).json({ msg: 'User does not exist' });
+    }
+    else {
+        const isMatch = yield user.comparePassword(String(req.body.passport), String(user.passport));
+        if (isMatch) {
+            const token = createToken(user);
+            res.status(200).json({ msg: 'User authenticated', token: token, user: user });
+        }
+        else {
+            res.status(400).json({ msg: 'Invalid passport' });
+        }
+    }
 });
 exports.signIn = signIn;
