@@ -20,7 +20,9 @@ function createToken(user) {
     const token = jsonwebtoken_1.default.sign({
         id: user._id,
         email: user.email
-    }, config_1.default.jwtSecret);
+    }, config_1.default.jwtSecret, {
+        expiresIn: '1h'
+    });
     return token;
 }
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {

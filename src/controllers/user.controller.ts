@@ -8,7 +8,9 @@ function createToken(user: IUser): string {
     const token =  jwt.sign({
         id: user._id,
         email: user.email
-    }, config.jwtSecret)
+    }, config.jwtSecret,{
+        expiresIn: '1h'
+    });
 
     return token;
 }
