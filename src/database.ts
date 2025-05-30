@@ -1,8 +1,11 @@
 import mongoose, { ConnectOptions } from "mongoose";
 import config from "./config/config.js";
-import { ConnectionOptions } from "mysql2";
 
-mongoose.connect(config.DB.URI)
+mongoose.connect(config.DB.URI, {
+    authSource: "admin",
+    user: config.DB.USER,
+    pass: config.DB.PASSWORD,
+});
 
 const connection = mongoose.connection;
 
